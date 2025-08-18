@@ -1,0 +1,43 @@
+
+services:
+  # سرویس دیتابیس PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: footzi_db
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=footzi_stats
+    volumes:
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  # سرویس موتور جستجوی Meilisearch
+  meilisearch:
+    image: getmeili/meilisearch:v1.3
+    container_name: footzi_search
+    environment:
+      - MEILI_MASTER_KEY=aMasterKey
+    ports:
+      - "7700:7700"
+    restart: unless-stopped
+
+  # سرویس اجرای کدهای پایتون برای ETL
+  etl:
+    build:
+      context: ./etl
+    container_name: footzi_etl
+    volumes:
+      - ./etl:/app
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://admin:password@db:5432/footzi_stats
+    # این دستور کانتینر را روشن نگه می‌دارد تا بتوانیم وارد آن شویم
+    command: tail -f /dev/null
+
+networks:
+  default:
+    driver: bridge
