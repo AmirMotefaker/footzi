@@ -1,20 +1,25 @@
-// src/player-stats.entity.ts
+// api/src/player-stats.entity.ts
+
+// ✅ فقط یک خط import باید وجود داشته باشد
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('player_stats_temp') // نام دقیق جدول در دیتابیس
+@Entity('players')
 export class PlayerStats {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  player_name: string;
+  full_name: string;
+  
+  @Column({ nullable: true })
+  known_as: string;
 
-  @Column()
-  club_name: string;
+  @Column({ type: 'date', nullable: true })
+  birth_date: string;
 
-  @Column()
+  @Column({ type: 'text', array: true, nullable: true })
+  nationality: string[];
+
+  @Column({ nullable: true })
   goals: number;
-
-  @Column()
-  source_url: string;
 }

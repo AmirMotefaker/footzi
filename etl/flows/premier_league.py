@@ -21,23 +21,23 @@ def get_top_scorers_list_task():
     print(f"✅ Success: Fetched {len(data)} player records.")
     return data
 
+# In etl/flows/premier_league.py, replace the entire function with this one
+
 @task
 def process_and_enrich_players_task(players_list: list):
-    """تسک ۲: جزئیات هر بازیکن را دریافت کرده و یک لیست کامل از داده‌ها می‌سازد."""
+    """Task 2: Gets details for each player and creates a complete data list."""
     print("🔄 Starting: Enriching player data...")
+
+    # ✅ This is the missing line that creates the list
     enriched_players = []
 
-    # برای سرعت در تست، فقط ۱۰ بازیکن اول را پردازش می‌کنیم
+    # We process only the first 10 players for testing speed
     for player_stat in players_list[:10]:
         player_id_api = player_stat.get('owner', {}).get('id')
         if not player_id_api:
             continue
 
-        # --- ✅ تغییر اصلی اینجاست ---
-        # ID را به عدد صحیح (integer) تبدیل می‌کنیم
         player_id_int = int(player_id_api)
-
-        # جزئیات بازیکن را با ID صحیح فراخوانی می‌کنیم
         details = get_player_details_from_api(player_id_int)
 
         if details:
@@ -52,6 +52,7 @@ def process_and_enrich_players_task(players_list: list):
                 "known_as": player_stat.get('owner', {}).get('name', {}).get('display'),
                 "birth_date": birth_date_sql,
                 "nationality": [details.get('nationality')] if details.get('nationality') != 'N/A' else [],
+                "goals": player_stat.get('value'),
             })
 
         time.sleep(0.5)

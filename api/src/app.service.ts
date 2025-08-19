@@ -13,12 +13,12 @@ export class AppService {
 
   // متد قبلی برای گرفتن تمام بازیکنان
   async findAll(): Promise<PlayerStats[]> {
-    return this.statsRepository.find({
-      order: {
-        goals: 'DESC',
-      },
-    });
-  }
+  return this.statsRepository.find({
+    order: {
+      full_name: 'ASC', // مرتب‌سازی بر اساس نام کامل به صورت صعودی (الفبایی)
+    },
+  });
+}
 
   // -- متد جدید برای گرفتن یک بازیکن --
   async findOne(id: string): Promise<PlayerStats | null> {

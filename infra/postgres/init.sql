@@ -2,16 +2,22 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- جدول بازیکنان برای ذخیره اطلاعات پایه
+-- infra/postgres/init.sql
+
+-- ... (دستور CREATE EXTENSION) ...
+
 CREATE TABLE players (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-  wikidata_qid text,
   full_name text NOT NULL,
   known_as text,
   birth_date date,
   nationality text[],
+  goals integer, -- <-- این خط اضافه شده است
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );
+
+-- ... (بقیه جداول) ...
 
 -- جدول باشگاه‌ها
 CREATE TABLE clubs (
