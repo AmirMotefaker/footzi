@@ -1,22 +1,19 @@
 // api/src/app.controller.ts
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common'; // <-- Query را اضافه می‌کنیم
 import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
+  // متد findAll حالا یک پارامتر search اختیاری از Query String می‌گیرد
   @Get()
-  findAll() {
-    return this.appService.findAll();
+  findAll(@Query('search') search?: string) {
+    return this.appService.findAll(search);
   }
 
-  // -- روت جدید برای گرفتن یک بازیکن بر اساس ID --
-  // دکوراتور @Get(':id') به این معنی است که این روت پارامتری به نام id در URL خواهد داشت
-  // مثلاً: /1e86107a-095d-4a39-bfc0-bbf9c79ba8f9
   @Get(':id') 
   findOne(@Param('id') id: string) {
-    // دکوراتور @Param('id') مقدار id را از URL استخراج کرده و در متغیر id قرار می‌دهد
     return this.appService.findOne(id);
   }
 }

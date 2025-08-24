@@ -1,8 +1,8 @@
 // api/src/app.service.ts
-
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+// ۱. به جای Like، از ILike استفاده می‌کنیم
+import { Repository, ILike } from 'typeorm'; 
 import { PlayerStats } from './player-stats.entity';
 
 @Injectable()
@@ -12,10 +12,18 @@ export class AppService {
     private statsRepository: Repository<PlayerStats>,
   ) {}
 
-  async findAll(): Promise<PlayerStats[]> {
+  async findAll(search?: string): Promise<PlayerStats[]> {
+    if (search) {
+      return this.statsRepository.find({
+        where: {
+          // ۲. جستجو را به ILike (case-Insensitive Like) تغییر می‌دهیم
+          full_name: ILike(`%${search}%`), 
+        },
+      });
+    }
     return this.statsRepository.find({
       order: {
-        full_name: 'ASC', // مرتب‌سازی بر اساس نام کامل
+        full_name: 'ASC',
       },
     });
   }

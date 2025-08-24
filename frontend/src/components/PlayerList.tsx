@@ -4,8 +4,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation'; // <-- useRouter را وارد می‌کنیم
 
-// This is the correct and complete Player type
 type Player = {
   id: string;
   full_name: string;
@@ -18,22 +18,25 @@ type Player = {
 const ITEMS_PER_PAGE = 12;
 
 export default function PlayerList({ initialPlayers }: { initialPlayers: Player[] }) {
+  // ✅ دیگر به State برای filteredPlayers نیازی نداریم
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredPlayers, setFilteredPlayers] = useState(initialPlayers);
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter(); // <-- از useRouter استفاده می‌کنیم
 
-  useEffect(() => {
-    const filtered = initialPlayers.filter(player =>
-      player.full_name && player.full_name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredPlayers(filtered);
-    setCurrentPage(1);
-  }, [searchQuery, initialPlayers]);
+  // ✅ تابع useEffect برای فیلتر کردن حذف می‌شود
+  // ✅ این تابع حالا URL را با پارامتر جستجو آپدیت می‌کند
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    // یک URL جدید با پارامتر search می‌سازیم
+    router.push(query ? `/?search=${query}` : '/');
+  }
 
-  const totalPages = Math.ceil(filteredPlayers.length / ITEMS_PER_PAGE);
+  // ✅ صفحه‌بندی روی initialPlayers انجام می‌شود
+  const totalPages = Math.ceil(initialPlayers.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedPlayers = filteredPlayers.slice(startIndex, endIndex);
+  const paginatedPlayers = initialPlayers.slice(startIndex, endIndex);
 
   return (
     <div>
@@ -42,7 +45,7 @@ export default function PlayerList({ initialPlayers }: { initialPlayers: Player[
         placeholder="جستجوی بازیکن..."
         className="w-full p-3 mb-6 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
         value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
+        onChange={handleSearch} // <-- تابع جدید را به اینجا وصل می‌کنیم
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -8,7 +8,8 @@ import os
 import time
 from datetime import datetime
 
-DATABASE_URL = "postgresql+psycopg2://postgres:12345678@localhost:5432/footzi_stats"
+# ❗️ اطمینان حاصل کنید که رمز عبور صحیح را اینجا قرار داده‌اید
+DATABASE_URL = "postgresql+psycopg2://postgres:YOUR_PASSWORD@localhost:5432/footzi_stats"
 
 @task(retries=3, retry_delay_seconds=10)
 def get_top_scorers_list_task():
@@ -21,62 +22,48 @@ def get_top_scorers_list_task():
     print(f"✅ Success: Fetched {len(data)} player records.")
     return data
 
-<<<<<<< HEAD
-# In etl/flows/premier_league.py, replace the entire function with this one
-
-@task
-def process_and_enrich_players_task(players_list: list):
-    """Task 2: Gets details for each player and creates a complete data list."""
-    print("🔄 Starting: Enriching player data...")
-
-    # ✅ This is the missing line that creates the list
-    enriched_players = []
-
-    # We process only the first 10 players for testing speed
-=======
 @task
 def process_and_enrich_players_task(players_list: list):
     """تسک ۲: جزئیات هر بازیکن را دریافت کرده و یک لیست کامل از داده‌ها می‌سازد."""
     print("🔄 Starting: Enriching player data...")
     enriched_players = []
+    
+    def get_stat_value(stats, stat_type):
+        """یک تابع کمکی برای استخراج امن آمار از لیست."""
+        if not stats:
+            return None
+        for stat in stats:
+            if stat.get('type') == stat_type:
+                return stat.get('value')
+        return None
 
-    # برای سرعت در تست، فقط ۱۰ بازیکن اول را پردازش می‌کنیم
->>>>>>> b7e3c7310cdd301a4f6dfe8c525db33518574998
-    for player_stat in players_list[:10]:
+    # پردازش تمام بازیکنان (محدودیت ۱۰ نفر برداشته شد)
+    for player_stat in players_list:
         player_id_api = player_stat.get('owner', {}).get('id')
         if not player_id_api:
             continue
 
-<<<<<<< HEAD
         player_id_int = int(player_id_api)
-=======
-        # --- ✅ تغییر اصلی اینجاست ---
-        # ID را به عدد صحیح (integer) تبدیل می‌کنیم
-        player_id_int = int(player_id_api)
-
-        # جزئیات بازیکن را با ID صحیح فراخوانی می‌کنیم
->>>>>>> b7e3c7310cdd301a4f6dfe8c525db33518574998
         details = get_player_details_from_api(player_id_int)
-
+        
         if details:
             try:
                 birth_date_obj = datetime.strptime(details['birthDate'], '%d %B %Y')
                 birth_date_sql = birth_date_obj.strftime('%Y-%m-%d')
             except (ValueError, TypeError):
                 birth_date_sql = None
-
+            
             enriched_players.append({
                 "full_name": details.get('name'),
                 "known_as": player_stat.get('owner', {}).get('name', {}).get('display'),
                 "birth_date": birth_date_sql,
-                "nationality": [details.get('nationality')] if details.get('nationality') != 'N/A' else [],
-<<<<<<< HEAD
-                "goals": player_stat.get('value'),
-=======
->>>>>>> b7e3c7310cdd301a4f6dfe8c525db33518574998
+                "nationality": [details.get('nationality')] if details.get('nationality') not in ['N/A', None] else [],
+                "goals": get_stat_value(player_stat.get('stats'), 'goals'),
+                "assists": get_stat_value(player_stat.get('stats'), 'goal_assist'),
+                "appearances": get_stat_value(player_stat.get('stats'), 'appearances'),
             })
-
-        time.sleep(0.5)
+        
+        time.sleep(0.5) # تاخیر برای جلوگیری از فشار به API
 
     print(f"✅ Success: Enriched details for {len(enriched_players)} players.")
     return enriched_players
@@ -95,9 +82,7 @@ def load_players_to_db_task(players_data: list):
         engine = create_engine(DATABASE_URL)
         with engine.connect() as conn:
             print("✅ Successfully connected to the database.")
-            # ابتدا جدول players را خالی می‌کنیم
             conn.execute(text("TRUNCATE TABLE players RESTART IDENTITY;"))
-            # داده‌های جدید را وارد می‌کنیم
             df.to_sql('players', con=conn, if_exists='append', index=False)
             conn.commit()
         print(f"✅ Success: Loaded {len(df)} rows into 'players' table.")

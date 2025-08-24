@@ -1,5 +1,4 @@
 // api/src/player-stats.entity.ts
-
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('players')
@@ -9,7 +8,7 @@ export class PlayerStats {
 
   @Column()
   full_name: string;
-
+  
   @Column({ nullable: true })
   known_as: string;
 
@@ -21,4 +20,10 @@ export class PlayerStats {
 
   @Column({ nullable: true })
   goals: number;
+
+  @Column({ nullable: true })
+  assists: number; // ✅ این خط اضافه شد
+
+  @Column({ nullable: true })
+  appearances: number; // ✅ این خط اضافه شد
 }
