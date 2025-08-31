@@ -1,0 +1,14 @@
+# Node.js (api & frontend)
+node_modules/
+.next/
+dist/
+.env
+npm-debug.log*
+
+# Python (etl)
+.venv/
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store

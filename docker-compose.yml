@@ -1,0 +1,68 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: footzi_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: footzi_main
+    volumes:
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio
+    container_name: footzi_storage
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./api
+    container_name: footzi_api
+    depends_on:
+      - postgres
+      - minio
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://admin:password@postgres:5432/footzi_main
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: footzi-memories
+    command: npm run start:dev
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: footzi_frontend
+    depends_on:
+      - api
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  minio_data:
